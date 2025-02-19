@@ -4,8 +4,127 @@ import { Mic, FileText, Activity, Clipboard, Loader2, ArrowLeft } from "lucide-r
 import { motion, AnimatePresence } from "framer-motion";
 import { jsPDF } from "jspdf";
 
-// Globale Variablen
+// Global initial state for Verlauf
 const initialVerlauf = [];
+
+// Hilfsfunktion zur Generierung von Patientendaten (erweiterte Beispiele)
+function generatePatientData(insuranceNumber) {
+  const names = [
+    "Max Mustermann",
+    "Erika Musterfrau",
+    "Hans Müller",
+    "Petra Schmidt",
+    "Sven Becker",
+    "Laura Schmitt",
+    "Tobias Schneider",
+    "Mia Fischer"
+  ];
+  const addresses = [
+    "Musterstraße 123, 12345 Musterstadt",
+    "Beispielweg 5, 54321 Beispielstadt",
+    "Teststraße 77, 67890 Teststadt",
+    "Demoallee 9, 98765 Demostadt",
+    "Beispielstraße 12, 10115 Berlin",
+    "Hauptstraße 99, 80331 München",
+    "Feldweg 7, 20095 Hamburg",
+    "Ringstraße 8, 50667 Köln"
+  ];
+  const birthDates = [
+    "15.03.1975",
+    "22.07.1980",
+    "01.01.1990",
+    "10.10.1985",
+    "05.05.1978",
+    "12.09.1992",
+    "28.02.1988",
+    "30.11.1983"
+  ];
+  const phones = [
+    "+49 157 80860453",
+    "+49 152 12345678",
+    "+49 160 98765432",
+    "+49 151 11112222",
+    "+49 170 33344455",
+    "+49 160 55566777",
+    "+49 159 88899900",
+    "+49 152 77766655"
+  ];
+  const allergies = [
+    "Penicillinallergie",
+    "Keine Allergien",
+    "Latexallergie",
+    "Nahrungsmittelallergie"
+  ];
+  const preChecks = [
+    { test: "Blutbild", date: "20.03.2023" },
+    { test: "Lipidprofil", date: "20.03.2023" },
+    { test: "EKG", date: "15.03.2023" },
+    { test: "Blutdruckmessung", date: "01.02.2023" },
+    { test: "Blutbild", date: "15.12.2022" }
+  ];
+  const conditions = [
+    ["Diabetes mellitus (seit 2019)", "Hypertonie (seit 2018)"],
+    ["Asthma bronchiale (seit 2015)"],
+    ["Keine bekannten Erkrankungen"],
+    ["Herzinsuffizienz (seit 2020)", "Hypertonie (seit 2018)"],
+    ["KHK (seit 2021)"],
+    ["Hypertonie (seit 2018)", "Cholesterinprobleme"]
+  ];
+  const medications = [
+    ["Metformin 500mg, 2x täglich", "Lisinopril 10mg, 1x täglich"],
+    ["Salbutamol Inhalator, bei Bedarf"],
+    ["Keine Medikation"],
+    ["Furosemid 40mg, 1x täglich", "Lisinopril 10mg, 1x täglich"],
+    ["Atorvastatin 20mg, 1x täglich"],
+    ["Amlodipin 5mg, 1x täglich"]
+  ];
+  const index = Math.floor(Math.random() * names.length);
+  return {
+    name: names[index],
+    birthDate: birthDates[index],
+    address: addresses[index],
+    phone: phones[index],
+    allergies: allergies[Math.floor(Math.random() * allergies.length)],
+    preChecks: preChecks, // Hier könnte man auch weitere Variationen einbauen
+    conditions: conditions[Math.floor(Math.random() * conditions.length)],
+    medications: medications[Math.floor(Math.random() * medications.length)]
+  };
+}
+
+function generateLabData() {
+  const baseCurrent = [
+    { param: "Leukozyten", value: 8, unit: "G/l", ref: "4 - 10" },
+    { param: "Thrombozyten", value: 220, unit: "G/l", ref: "150 - 360" },
+    { param: "Erythrozyten", value: 5.0, unit: "10^3/µl", ref: "4.2 - 5.4" },
+    { param: "Hämoglobin", value: 15.5, unit: "g/dl", ref: "13.4 - 17.6" },
+    { param: "Hämatokrit", value: 45, unit: "%", ref: "43 - 49" },
+    { param: "MCH", value: 29, unit: "pg", ref: "27 - 33" },
+    { param: "MCV", value: 90, unit: "fl", ref: "80 - 96" },
+    { param: "MCHC", value: 32, unit: "g/dl", ref: "28 - 36" },
+  ];
+  const baseOlder = [
+    { param: "Leukozyten", value: 7.8, unit: "G/l", ref: "4 - 10" },
+    { param: "Thrombozyten", value: 215, unit: "G/l", ref: "150 - 360" },
+    { param: "Erythrozyten", value: 4.9, unit: "10^3/µl", ref: "4.2 - 5.4" },
+    { param: "Hämoglobin", value: 15.0, unit: "g/dl", ref: "13.4 - 17.6" },
+    { param: "Hämatokrit", value: 44, unit: "%", ref: "43 - 49" },
+    { param: "MCH", value: 28.5, unit: "pg", ref: "27 - 33" },
+    { param: "MCV", value: 89, unit: "fl", ref: "80 - 96" },
+    { param: "MCHC", value: 31.5, unit: "g/dl", ref: "28 - 36" },
+  ];
+
+  const randomize = (base) =>
+    base.map((item) => ({
+      ...item,
+      value: (item.value + (Math.random() * 2 - 1)).toFixed(1),
+      date: item === baseCurrent[0] ? "20.03.2023" : "15.12.2022"
+    }));
+
+  return {
+    currentLabValues: randomize(baseCurrent),
+    olderLabValues: randomize(baseOlder)
+  };
+}
 
 // ---------------------------
 // Toast-Komponente
@@ -54,7 +173,7 @@ function BackButton() {
 // ---------------------------
 // Home-Komponente
 // ---------------------------
-function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActiveProfile }) {
+function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActiveProfile, resetVerlauf, updatePatientData, updateLabData }) {
   const [error, setError] = useState("");
 
   const handleConfirm = () => {
@@ -63,10 +182,11 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
       return;
     }
     setError("");
-    setActiveProfile({
-      name: "Max Mustermann",
-      insuranceNumber: insuranceNumber,
-    });
+    const patient = generatePatientData(insuranceNumber);
+    setActiveProfile({ insuranceNumber, name: patient.name });
+    updatePatientData(patient);
+    updateLabData(generateLabData());
+    resetVerlauf();
   };
 
   return (
@@ -123,7 +243,6 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
         <Link to="/verlauf">
           <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-lg border border-gray-300">
             <Clipboard className="w-12 h-12 mx-auto text-yellow-500" />
-            {/* Neue Überschrift + Beschreibung */}
             <h2 className="text-xl font-semibold mt-2">Arztbrief-Historie</h2>
             <p className="text-gray-600">Diktate und dazugehörige Arztbriefe inklusive Status</p>
           </div>
@@ -150,9 +269,9 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
 }
 
 // ---------------------------
-// Diktierfunktion (unverändert außer Namensänderungen)
+// Diktierfunktion
 // ---------------------------
-function Diktierfunktion({ addToVerlauf, activeProfile, showToast, updateEntry }) {
+function Diktierfunktion({ addToVerlauf, activeProfile, patientData, showToast, updateEntry }) {
   const [dictation, setDictation] = useState("");
   const [arztbrief, setArztbrief] = useState("");
   const [loading, setLoading] = useState(false);
@@ -207,10 +326,10 @@ An:
 Dr. med. Mustermann
 Allgemeinmedizin
 
-Patient: Max Mustermann
-Geburtsdatum: 15.03.1975
+Patient: ${patientData.name}
+Geburtsdatum: ${patientData.birthDate}
 Versicherungsnummer: ${insuranceNumber}
-Allergien: Penicillinallergie
+Allergien: ${patientData.allergies}
 
 Sehr geehrte Damen und Herren,
 
@@ -347,23 +466,24 @@ Dr. Mustermann`;
 // ---------------------------
 // Patientenakte
 // ---------------------------
-function Patientenakte({ activeProfile }) {
+function Patientenakte({ activeProfile, patientData }) {
+  const sortedPreChecks = [...patientData.preChecks].sort((a, b) => new Date(b.date) - new Date(a.date));
   return (
     <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-300">
       <BackButton />
       <h1 className="text-2xl font-bold mb-4">Patientenakte</h1>
       <div className="mb-4">
         <p>
-          <strong>Name:</strong> {activeProfile.name || "Max Mustermann"}
+          <strong>Name:</strong> {patientData.name}
         </p>
         <p>
-          <strong>Geburtsdatum:</strong> 15.03.1975
+          <strong>Geburtsdatum:</strong> {patientData.birthDate}
         </p>
         <p>
-          <strong>Adresse:</strong> Musterstraße 123, 12345 Musterstadt
+          <strong>Adresse:</strong> {patientData.address}
         </p>
         <p>
-          <strong>Telefon:</strong> +49 157 80860453
+          <strong>Telefon:</strong> {patientData.phone}
         </p>
         <p>
           <strong>Versicherungsnummer:</strong> {activeProfile.insuranceNumber}
@@ -371,31 +491,32 @@ function Patientenakte({ activeProfile }) {
       </div>
       <div className="mb-4">
         <h3 className="font-semibold">Allergien:</h3>
-        <p>Penicillinallergie</p>
+        <p>{patientData.allergies}</p>
       </div>
       <div className="mb-4">
         <h3 className="font-semibold">Voruntersuchungen:</h3>
         <ul className="list-disc list-inside">
-          {/* Neueste zuerst */}
-          <li>Blutbild am 20.03.2023</li>
-          <li>Lipidprofil am 20.03.2023</li>
-          <li>EKG am 15.03.2023</li>
-          <li>Blutdruckmessung am 01.02.2023</li>
-          <li>Blutbild am 15.12.2022</li>
+          {sortedPreChecks.map((check, idx) => (
+            <li key={idx}>
+              {check.test} am {check.date}
+            </li>
+          ))}
         </ul>
       </div>
       <div className="mb-4">
         <h3 className="font-semibold">Erkrankungen:</h3>
         <ul className="list-disc list-inside">
-          <li>Diabetes mellitus (seit 2019)</li>
-          <li>Hypertonie (seit 2018)</li>
+          {patientData.conditions.map((cond, idx) => (
+            <li key={idx}>{cond}</li>
+          ))}
         </ul>
       </div>
       <div className="mb-4">
         <h3 className="font-semibold">Medikationen:</h3>
         <ul className="list-disc list-inside">
-          <li>Metformin 500mg, 2x täglich</li>
-          <li>Lisinopril 10mg, 1x täglich</li>
+          {patientData.medications.map((med, idx) => (
+            <li key={idx}>{med}</li>
+          ))}
         </ul>
       </div>
     </div>
@@ -405,34 +526,12 @@ function Patientenakte({ activeProfile }) {
 // ---------------------------
 // Laborwerte
 // ---------------------------
-function Laborwerte() {
-  const currentLabValues = [
-    { param: "Leukozyten", value: "26 G/l", ref: "4 - 10", interpretation: "+", date: "20.03.2023" },
-    { param: "Thrombozyten", value: "165 G/l", ref: "150 - 360", interpretation: "", date: "20.03.2023" },
-    { param: "Erythrozyten", value: "5.39 10^3/µl", ref: "4.2 - 5.4", interpretation: "", date: "20.03.2023" },
-    { param: "Hämoglobin", value: "16.7 g/dl", ref: "13.4 - 17.6", interpretation: "", date: "20.03.2023" },
-    { param: "Hämatokrit", value: "49.7 %", ref: "43.0 - 49.0", interpretation: "+", date: "20.03.2023" },
-    { param: "MCH", value: "29.7 pg", ref: "27 - 33", interpretation: "", date: "20.03.2023" },
-    { param: "MCV", value: "92 fl", ref: "80 - 96", interpretation: "", date: "20.03.2023" },
-    { param: "MCHC", value: "32.2 g/dl", ref: "28 - 36", interpretation: "", date: "20.03.2023" },
-  ];
-
-  const olderLabValues = [
-    { param: "Leukozyten", value: "8 G/l", ref: "4 - 10", interpretation: "", date: "15.12.2022" },
-    { param: "Thrombozyten", value: "250 G/l", ref: "150 - 360", interpretation: "", date: "15.12.2022" },
-    { param: "Erythrozyten", value: "4.8 10^3/µl", ref: "4.2 - 5.4", interpretation: "", date: "15.12.2022" },
-    { param: "Hämoglobin", value: "15.0 g/dl", ref: "13.4 - 17.6", interpretation: "", date: "15.12.2022" },
-    { param: "Hämatokrit", value: "45 %", ref: "43.0 - 49.0", interpretation: "", date: "15.12.2022" },
-    { param: "MCH", value: "29 pg", ref: "27 - 33", interpretation: "", date: "15.12.2022" },
-    { param: "MCV", value: "90 fl", ref: "80 - 96", interpretation: "", date: "15.12.2022" },
-    { param: "MCHC", value: "32 g/dl", ref: "28 - 36", interpretation: "", date: "15.12.2022" },
-  ];
-
+function Laborwerte({ labData }) {
+  const { currentLabValues, olderLabValues } = labData;
   return (
     <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-300">
       <BackButton />
       <h1 className="text-2xl font-bold mb-4">Laborwerte</h1>
-
       <h2 className="text-xl font-semibold mt-4 mb-2">Aktueller Laborbericht (20.03.2023) - Blutbild</h2>
       <table className="min-w-full bg-white border mb-2">
         <thead>
@@ -448,7 +547,7 @@ function Laborwerte() {
           {currentLabValues.map((item, idx) => (
             <tr key={idx}>
               <td className="px-4 py-2 border-b">{item.param}</td>
-              <td className="px-4 py-2 border-b">{item.value}</td>
+              <td className="px-4 py-2 border-b">{item.value} {item.unit}</td>
               <td className="px-4 py-2 border-b">{item.date}</td>
               <td className="px-4 py-2 border-b">{item.ref}</td>
               <td className="px-4 py-2 border-b">{item.interpretation}</td>
@@ -456,11 +555,9 @@ function Laborwerte() {
           ))}
         </tbody>
       </table>
-
       <p className="mt-2 text-gray-700">
         Hinweis: Geringfügige Leukozytose im aktuellen Bericht. Überwachung der Thrombozytenzahl wird empfohlen.
       </p>
-
       <h2 className="text-xl font-semibold mt-4 mb-2">Älterer Laborbericht (15.12.2022) - Blutbild</h2>
       <table className="min-w-full bg-white border">
         <thead>
@@ -476,7 +573,7 @@ function Laborwerte() {
           {olderLabValues.map((item, idx) => (
             <tr key={idx}>
               <td className="px-4 py-2 border-b">{item.param}</td>
-              <td className="px-4 py-2 border-b">{item.value}</td>
+              <td className="px-4 py-2 border-b">{item.value} {item.unit}</td>
               <td className="px-4 py-2 border-b">{item.date}</td>
               <td className="px-4 py-2 border-b">{item.ref}</td>
               <td className="px-4 py-2 border-b">{item.interpretation}</td>
@@ -489,19 +586,13 @@ function Laborwerte() {
 }
 
 // ---------------------------
-// Verlauf (nun "Arztbrief-Historie"), gruppiert + Dashboard
+// Verlauf (Arztbrief-Historie mit Dashboard)
 // ---------------------------
 function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOpen }) {
   const [filter, setFilter] = useState("alle");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
 
-  // Zählung basierend auf allen Einträgen, nicht gefiltert
-  const openCount = verlauf.filter((e) => e.status === "offen").length;
-  const savedCount = verlauf.filter((e) => e.status === "gespeichert").length;
-  const sentCount = verlauf.filter((e) => e.status === "verschickt").length;
-
-  // Filterung nur für die Anzeige
   const filteredVerlauf = verlauf.filter((entry) => {
     const matchesProfile =
       activeProfile.insuranceNumber &&
@@ -510,7 +601,6 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
     return matchesProfile && matchesFilter;
   });
 
-  // Gruppieren nach pairId (oder id, wenn pairId nicht vorhanden)
   const groups = {};
   filteredVerlauf.forEach((entry) => {
     const key = entry.pairId ? entry.pairId : entry.id;
@@ -519,8 +609,17 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
     }
     groups[key].push(entry);
   });
-  // Neueste Gruppe oben
   const sortedGroups = Object.values(groups).sort((a, b) => b[0].id - a[0].id);
+
+  // Für Dashboard: Zähle den Status pro Gruppe (jede Gruppe zählt einmal)
+  const groupStatuses = Object.values(groups).map((group) => {
+    const statuses = group.map((e) => e.status);
+    const unique = [...new Set(statuses)];
+    return unique.length === 1 ? unique[0] : "offen";
+  });
+  const openCount = groupStatuses.filter((s) => s === "offen").length;
+  const savedCount = groupStatuses.filter((s) => s === "gespeichert").length;
+  const sentCount = groupStatuses.filter((s) => s === "verschickt").length;
 
   const startEditing = (entry) => {
     setEditingId(entry.id);
@@ -536,14 +635,11 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
   return (
     <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-300">
       <BackButton />
-      {/* Neue Überschrift */}
       <h1 className="text-2xl font-bold mb-4">Arztbrief-Historie</h1>
-      {/* Dashboard-Statistiken (zählen immer alle, ungefiltert) */}
       <div className="mb-4 flex justify-around items-center">
         <div className="text-sm font-semibold text-gray-700">Offen: {openCount}</div>
         <div className="text-sm font-semibold text-gray-700">Gespeichert: {savedCount}</div>
         <div className="text-sm font-semibold text-gray-700">Verschickt: {sentCount}</div>
-        {/* Button zum Löschen aller offenen Einträge (etwas verkleinert) */}
         <button
           onClick={deleteAllOpen}
           className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded text-sm"
@@ -551,7 +647,6 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
           Alle offenen löschen
         </button>
       </div>
-      {/* Filter-Dropdown */}
       <div className="mb-4">
         <label className="mr-2 font-semibold">Filter:</label>
         <select
@@ -577,13 +672,21 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
                 transition={{ duration: 0.5 }}
                 className="p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-200"
               >
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-bold text-gray-700">
+                    Status: {(() => {
+                      const statuses = group.map((e) => e.status);
+                      const unique = [...new Set(statuses)];
+                      return unique.length === 1 ? unique[0] : "offen";
+                    })()}
+                  </h2>
+                </div>
                 {group.map((item) => (
                   <div key={item.id} className="mb-2">
                     <div className="flex justify-between items-center">
                       <div>
-                        <h2 className="font-semibold">{item.title}</h2>
+                        <h3 className="font-semibold">{item.title}</h3>
                         <p className="text-sm text-gray-500">{item.timestamp}</p>
-                        <p className="text-xs text-gray-400">Status: {item.status}</p>
                       </div>
                       <div className="flex space-x-2">
                         {editingId === item.id ? (
@@ -599,7 +702,9 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
                               onClick={() => startEditing(item)}
                               className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-2 rounded text-xs"
                             >
-                              {item.status === "offen" ? "Fortsetzen" : "Bearbeiten"}
+                              {item.title === "Diktat" && group[0].status === "offen"
+                                ? "Fortsetzen"
+                                : "Bearbeiten"}
                             </button>
                             <button
                               onClick={() => deleteEntry(item.id)}
@@ -635,13 +740,19 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
 }
 
 // ---------------------------
-// App
+// App-Komponente
 // ---------------------------
 export default function App() {
   const [insuranceNumber, setInsuranceNumber] = useState("");
   const [activeProfile, setActiveProfile] = useState({ name: "", insuranceNumber: "" });
+  const [patientData, setPatientData] = useState(generatePatientData("123456789"));
+  const [labData, setLabData] = useState(generateLabData());
   const [verlauf, setVerlauf] = useState(initialVerlauf);
   const [toast, setToast] = useState(null);
+
+  const resetVerlauf = () => setVerlauf([]);
+  const updatePatientData = (data) => setPatientData(data);
+  const updateLabData = (data) => setLabData(data);
 
   const addToVerlauf = (title, content, status, pairId = null) => {
     const timestamp = new Date().toLocaleString();
@@ -650,29 +761,19 @@ export default function App() {
     return newEntry;
   };
 
-  const deleteEntry = (id) => {
-    setVerlauf((prev) => prev.filter((entry) => entry.id !== id));
-  };
-
+  const deleteEntry = (id) => setVerlauf((prev) => prev.filter((entry) => entry.id !== id));
   const updateEntry = (id, newContent, newStatus) => {
     setVerlauf((prev) =>
       prev.map((entry) =>
-        entry.id === id
-          ? { ...entry, content: newContent, status: newStatus, timestamp: new Date().toLocaleString() }
-          : entry
+        entry.id === id ? { ...entry, content: newContent, status: newStatus, timestamp: new Date().toLocaleString() } : entry
       )
     );
   };
 
-  const deleteAllOpen = () => {
-    setVerlauf((prev) => prev.filter((entry) => entry.status !== "offen"));
-  };
-
+  const deleteAllOpen = () => setVerlauf((prev) => prev.filter((entry) => entry.status !== "offen"));
   const showToast = (message, type = "success") => {
     setToast({ message, type });
-    setTimeout(() => {
-      setToast(null);
-    }, 3000);
+    setTimeout(() => setToast(null), 3000);
   };
 
   return (
@@ -687,6 +788,9 @@ export default function App() {
               setInsuranceNumber={setInsuranceNumber}
               activeProfile={activeProfile}
               setActiveProfile={setActiveProfile}
+              resetVerlauf={resetVerlauf}
+              updatePatientData={updatePatientData}
+              updateLabData={updateLabData}
             />
           }
         />
@@ -696,13 +800,14 @@ export default function App() {
             <Diktierfunktion
               addToVerlauf={addToVerlauf}
               activeProfile={activeProfile}
+              patientData={patientData}
               showToast={showToast}
               updateEntry={updateEntry}
             />
           }
         />
-        <Route path="/patientenakte" element={<Patientenakte activeProfile={activeProfile} />} />
-        <Route path="/laborwerte" element={<Laborwerte />} />
+        <Route path="/patientenakte" element={<Patientenakte activeProfile={activeProfile} patientData={patientData} />} />
+        <Route path="/laborwerte" element={<Laborwerte labData={labData} />} />
         <Route
           path="/verlauf"
           element={

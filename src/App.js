@@ -7,7 +7,8 @@ import { jsPDF } from "jspdf";
 // Global initial state for Verlauf
 const initialVerlauf = [];
 
-// Hilfsfunktion zur Generierung von Patientendaten (erweiterte Beispiele)
+// --- Hilfsfunktionen zur Generierung von Patientendaten und Laborwerten ---
+
 function generatePatientData(insuranceNumber) {
   const names = [
     "Max Mustermann",
@@ -85,7 +86,7 @@ function generatePatientData(insuranceNumber) {
     address: addresses[index],
     phone: phones[index],
     allergies: allergies[Math.floor(Math.random() * allergies.length)],
-    preChecks: preChecks, // Hier könnte man auch weitere Variationen einbauen
+    preChecks: preChecks,
     conditions: conditions[Math.floor(Math.random() * conditions.length)],
     medications: medications[Math.floor(Math.random() * medications.length)]
   };
@@ -157,21 +158,21 @@ function Toast({ toast }) {
 }
 
 // ---------------------------
-// BackButton
+// BackButton (responsive)
 // ---------------------------
 function BackButton() {
   return (
     <Link
       to="/"
-      className="fixed top-4 left-4 bg-gray-200 p-3 rounded-full shadow-md hover:bg-gray-300 transition"
+      className="fixed top-2 left-2 sm:top-4 sm:left-4 bg-gray-200 p-2 sm:p-3 rounded-full shadow-md hover:bg-gray-300 transition"
     >
-      <ArrowLeft className="w-6 h-6" />
+      <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
     </Link>
   );
 }
 
 // ---------------------------
-// Home-Komponente
+// Home-Komponente (Desktop & Mobile optimiert)
 // ---------------------------
 function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActiveProfile, resetVerlauf, updatePatientData, updateLabData }) {
   const [error, setError] = useState("");
@@ -190,8 +191,8 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-6">
-      <div className="mb-8 w-full max-w-2xl flex flex-col items-center">
+    <div className="container mx-auto px-4 py-6">
+      <div className="mb-8 w-full max-w-2xl mx-auto flex flex-col items-center">
         <label htmlFor="insurance" className="block text-lg font-semibold text-gray-800 mb-2">
           Versicherungsnummer
         </label>
@@ -216,7 +217,7 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
       </div>
 
       {activeProfile.insuranceNumber && (
-        <div className="bg-white p-4 rounded border border-gray-300 w-full max-w-2xl text-center mb-8">
+        <div className="bg-white p-4 rounded border border-gray-300 w-full max-w-2xl mx-auto text-center mb-8">
           <p className="text-lg font-semibold text-gray-800">
             Aktuelles Profil: {activeProfile.name}; Versicherungsnummer: {activeProfile.insuranceNumber}
           </p>
@@ -231,9 +232,9 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
         Medizinische Assistenz-App
       </motion.h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl mx-auto">
         <Link to="/diktierfunktion">
-          <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-lg border border-gray-300">
+          <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-xl border border-gray-200 transition duration-300">
             <Mic className="w-12 h-12 mx-auto text-blue-500" />
             <h2 className="text-xl font-semibold mt-2">Diktierfunktion</h2>
             <p className="text-gray-600">Arztbriefe per Spracheingabe erstellen</p>
@@ -241,7 +242,7 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
         </Link>
 
         <Link to="/verlauf">
-          <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-lg border border-gray-300">
+          <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-xl border border-gray-200 transition duration-300">
             <Clipboard className="w-12 h-12 mx-auto text-yellow-500" />
             <h2 className="text-xl font-semibold mt-2">Arztbrief-Historie</h2>
             <p className="text-gray-600">Diktate und dazugehörige Arztbriefe inklusive Status</p>
@@ -249,7 +250,7 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
         </Link>
 
         <Link to="/laborwerte">
-          <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-lg border border-gray-300">
+          <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-xl border border-gray-200 transition duration-300">
             <Activity className="w-12 h-12 mx-auto text-red-500" />
             <h2 className="text-xl font-semibold mt-2">Laborwerte</h2>
             <p className="text-gray-600">Schneller Zugriff auf alle Laborberichte</p>
@@ -257,7 +258,7 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
         </Link>
 
         <Link to="/patientenakte">
-          <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-lg border border-gray-300">
+          <div className="p-6 text-center hover:shadow-xl cursor-pointer bg-white rounded-xl border border-gray-200 transition duration-300">
             <FileText className="w-12 h-12 mx-auto text-green-500" />
             <h2 className="text-xl font-semibold mt-2">Patientenakte</h2>
             <p className="text-gray-600">Voruntersuchungen & Diagnosen abrufen</p>
@@ -314,9 +315,7 @@ function Diktierfunktion({ addToVerlauf, activeProfile, patientData, showToast, 
     }
   ];
   const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-
   const rawDictationText = `Patient klagt über ${scenario.complaint}. Diagnose: ${scenario.diagnosis}. Versicherungsnummer: ${insuranceNumber}. Medikamenteneinnahme: ${scenario.medication}.`;
-
   const createFormattedLetter = () => {
     return `Musterklinik Musterstadt
 Musterstraße 1
@@ -395,15 +394,17 @@ Dr. Mustermann`;
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-300">
+    <div className="container mx-auto px-4 py-6">
       <BackButton />
-      <h1 className="text-2xl font-bold mb-4">Diktierfunktion</h1>
-      <button
-        onClick={startDictation}
-        className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-      >
-        Diktat starten
-      </button>
+      <h1 className="text-2xl font-bold mb-4 text-center">Diktierfunktion</h1>
+      <div className="flex justify-center">
+        <button
+          onClick={startDictation}
+          className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+        >
+          Diktat starten
+        </button>
+      </div>
       {dictation && (
         <div className="mt-4">
           <h3 className="font-semibold">Gesprochenes Diktat:</h3>
@@ -431,7 +432,7 @@ Dr. Mustermann`;
               {arztbrief}
             </pre>
           )}
-          <div className="flex gap-4 mt-2">
+          <div className="flex flex-wrap gap-2 mt-2">
             <button
               onClick={toggleEditMode}
               className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
@@ -464,83 +465,79 @@ Dr. Mustermann`;
 }
 
 // ---------------------------
-// Patientenakte
+// Patientenakte (verbessertes Desktop-Layout)
 // ---------------------------
 function Patientenakte({ activeProfile, patientData }) {
   const sortedPreChecks = [...patientData.preChecks].sort((a, b) => new Date(b.date) - new Date(a.date));
   return (
-    <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-300">
+    <div className="container mx-auto px-4 py-6">
       <BackButton />
-      <h1 className="text-2xl font-bold mb-4">Patientenakte</h1>
-      <div className="mb-4">
-        <p>
-          <strong>Name:</strong> {patientData.name}
-        </p>
-        <p>
-          <strong>Geburtsdatum:</strong> {patientData.birthDate}
-        </p>
-        <p>
-          <strong>Adresse:</strong> {patientData.address}
-        </p>
-        <p>
-          <strong>Telefon:</strong> {patientData.phone}
-        </p>
-        <p>
-          <strong>Versicherungsnummer:</strong> {activeProfile.insuranceNumber}
-        </p>
-      </div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Allergien:</h3>
-        <p>{patientData.allergies}</p>
-      </div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Voruntersuchungen:</h3>
-        <ul className="list-disc list-inside">
-          {sortedPreChecks.map((check, idx) => (
-            <li key={idx}>
-              {check.test} am {check.date}
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Erkrankungen:</h3>
-        <ul className="list-disc list-inside">
-          {patientData.conditions.map((cond, idx) => (
-            <li key={idx}>{cond}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="mb-4">
-        <h3 className="font-semibold">Medikationen:</h3>
-        <ul className="list-disc list-inside">
-          {patientData.medications.map((med, idx) => (
-            <li key={idx}>{med}</li>
-          ))}
-        </ul>
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl border border-gray-200 p-8">
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800 border-b pb-2">Patientenakte</h1>
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p className="text-lg"><span className="font-semibold">Name:</span> {patientData.name}</p>
+            <p className="text-lg"><span className="font-semibold">Geburtsdatum:</span> {patientData.birthDate}</p>
+          </div>
+          <div>
+            <p className="text-lg"><span className="font-semibold">Adresse:</span> {patientData.address}</p>
+            <p className="text-lg"><span className="font-semibold">Telefon:</span> {patientData.phone}</p>
+          </div>
+          <div className="col-span-2">
+            <p className="text-lg"><span className="font-semibold">Versicherungsnummer:</span> {activeProfile.insuranceNumber}</p>
+          </div>
+        </div>
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Allergien</h3>
+          <p className="text-lg text-gray-600">{patientData.allergies}</p>
+        </div>
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Voruntersuchungen</h3>
+          <ul className="list-disc list-inside text-lg text-gray-600">
+            {sortedPreChecks.map((check, idx) => (
+              <li key={idx}>{check.test} am {check.date}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Erkrankungen</h3>
+          <ul className="list-disc list-inside text-lg text-gray-600">
+            {patientData.conditions.map((cond, idx) => (
+              <li key={idx}>{cond}</li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Medikationen</h3>
+          <ul className="list-disc list-inside text-lg text-gray-600">
+            {patientData.medications.map((med, idx) => (
+              <li key={idx}>{med}</li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
 }
 
 // ---------------------------
-// Laborwerte
+// Laborwerte (verbesserte Überschriften-Ausrichtung)
 // ---------------------------
 function Laborwerte({ labData }) {
   const { currentLabValues, olderLabValues } = labData;
   return (
-    <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-300">
+    <div className="container mx-auto px-4 py-6">
       <BackButton />
-      <h1 className="text-2xl font-bold mb-4">Laborwerte</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">Laborwerte</h1>
       <h2 className="text-xl font-semibold mt-4 mb-2">Aktueller Laborbericht (20.03.2023) - Blutbild</h2>
       <table className="min-w-full bg-white border mb-2">
         <thead>
           <tr>
-            <th className="px-4 py-2 border-b">Analyse</th>
-            <th className="px-4 py-2 border-b">Ergebnis</th>
-            <th className="px-4 py-2 border-b">Testdatum</th>
-            <th className="px-4 py-2 border-b">Referenzbereiche</th>
-            <th className="px-4 py-2 border-b">Interpretation</th>
+            <th className="px-6 py-3 border-b text-left">Analyse</th>
+            <th className="px-6 py-3 border-b text-left">Ergebnis</th>
+            <th className="px-6 py-3 border-b text-left">Testdatum</th>
+            <th className="px-6 py-3 border-b text-left">Referenzbereiche</th>
+            <th className="px-6 py-3 border-b text-left">Interpretation</th>
           </tr>
         </thead>
         <tbody>
@@ -562,11 +559,11 @@ function Laborwerte({ labData }) {
       <table className="min-w-full bg-white border">
         <thead>
           <tr>
-            <th className="px-4 py-2 border-b">Analyse</th>
-            <th className="px-4 py-2 border-b">Ergebnis</th>
-            <th className="px-4 py-2 border-b">Testdatum</th>
-            <th className="px-4 py-2 border-b">Referenzbereiche</th>
-            <th className="px-4 py-2 border-b">Interpretation</th>
+            <th className="px-6 py-3 border-b text-left">Analyse</th>
+            <th className="px-6 py-3 border-b text-left">Ergebnis</th>
+            <th className="px-6 py-3 border-b text-left">Testdatum</th>
+            <th className="px-6 py-3 border-b text-left">Referenzbereiche</th>
+            <th className="px-6 py-3 border-b text-left">Interpretation</th>
           </tr>
         </thead>
         <tbody>
@@ -611,7 +608,6 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
   });
   const sortedGroups = Object.values(groups).sort((a, b) => b[0].id - a[0].id);
 
-  // Für Dashboard: Zähle den Status pro Gruppe (jede Gruppe zählt einmal)
   const groupStatuses = Object.values(groups).map((group) => {
     const statuses = group.map((e) => e.status);
     const unique = [...new Set(statuses)];
@@ -633,10 +629,10 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto bg-white rounded-lg shadow-md border border-gray-300">
+    <div className="container mx-auto px-4 py-6">
       <BackButton />
-      <h1 className="text-2xl font-bold mb-4">Arztbrief-Historie</h1>
-      <div className="mb-4 flex justify-around items-center">
+      <h1 className="text-2xl font-bold mb-4 text-center">Arztbrief-Historie</h1>
+      <div className="mb-4 flex flex-wrap justify-around items-center">
         <div className="text-sm font-semibold text-gray-700">Offen: {openCount}</div>
         <div className="text-sm font-semibold text-gray-700">Gespeichert: {savedCount}</div>
         <div className="text-sm font-semibold text-gray-700">Verschickt: {sentCount}</div>
@@ -765,7 +761,9 @@ export default function App() {
   const updateEntry = (id, newContent, newStatus) => {
     setVerlauf((prev) =>
       prev.map((entry) =>
-        entry.id === id ? { ...entry, content: newContent, status: newStatus, timestamp: new Date().toLocaleString() } : entry
+        entry.id === id
+          ? { ...entry, content: newContent, status: newStatus, timestamp: new Date().toLocaleString() }
+          : entry
       )
     );
   };

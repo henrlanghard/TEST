@@ -8,7 +8,6 @@ import { jsPDF } from "jspdf";
 const initialVerlauf = [];
 
 // --- Hilfsfunktionen zur Generierung von Patientendaten und Laborwerten ---
-
 function generatePatientData(insuranceNumber) {
   const names = [
     "Max Mustermann",
@@ -172,7 +171,7 @@ function BackButton() {
 }
 
 // ---------------------------
-// Home-Komponente (Desktop & Mobile optimiert)
+// Home-Komponente (Logo entfernt)
 // ---------------------------
 function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActiveProfile, resetVerlauf, updatePatientData, updateLabData }) {
   const [error, setError] = useState("");
@@ -270,7 +269,7 @@ function Home({ insuranceNumber, setInsuranceNumber, activeProfile, setActivePro
 }
 
 // ---------------------------
-// Diktierfunktion
+// Diktierfunktion (Empfehlung wird im Diktat integriert, neues Szenario pro Aufruf)
 // ---------------------------
 function Diktierfunktion({ addToVerlauf, activeProfile, patientData, showToast, updateEntry }) {
   const [dictation, setDictation] = useState("");
@@ -282,42 +281,46 @@ function Diktierfunktion({ addToVerlauf, activeProfile, patientData, showToast, 
   const [letterEntryId, setLetterEntryId] = useState(null);
 
   const insuranceNumber = activeProfile.insuranceNumber;
-  const scenarios = [
-    {
-      complaint: "starke Kopfschmerzen, die sich bei Bewegung verstärken",
-      diagnosis: "Spannungskopfschmerz",
-      recommendation: "Ibuprofen 400mg fortführen und Zustand beobachten.",
-      medication: "Ibuprofen 400mg"
-    },
-    {
-      complaint: "akute Schmerzen im rechten Knie nach einem Sturz mit Schwellung",
-      diagnosis: "Verdacht auf Meniskusriss",
-      recommendation: "MRT-Diagnostik und konservative Therapie.",
-      medication: "Ibuprofen 600mg"
-    },
-    {
-      complaint: "akute Rückenschmerzen ohne neurologische Ausfälle",
-      diagnosis: "Lumbale Muskelverspannungen",
-      recommendation: "Schonung, Wärmeanwendung und Physiotherapie.",
-      medication: "Paracetamol 500mg"
-    },
-    {
-      complaint: "intermittierende Bauchschmerzen und Übelkeit",
-      diagnosis: "Gastroenteritis",
-      recommendation: "Flüssigkeitszufuhr erhöhen und leichte Kost.",
-      medication: "Metoclopramid 10mg"
-    },
-    {
-      complaint: "verschlechternde Sehstörungen und Kopfschmerzen mit Übelkeit",
-      diagnosis: "Migräne mit Aura",
-      recommendation: "Schonung, Trigger vermeiden, ggf. Triptane verabreichen.",
-      medication: "Sumatriptan 50mg"
-    }
-  ];
-  const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-  const rawDictationText = `Patient klagt über ${scenario.complaint}. Diagnose: ${scenario.diagnosis}. Versicherungsnummer: ${insuranceNumber}. Medikamenteneinnahme: ${scenario.medication}.`;
-  const createFormattedLetter = () => {
-    return `Musterklinik Musterstadt
+
+  const startDictation = () => {
+    // Neues Szenario direkt in der Funktion generieren, sodass es bei jedem Aufruf neu ist
+    const scenarios = [
+      {
+        complaint: "starke Kopfschmerzen, die sich bei Bewegung verstärken",
+        diagnosis: "Spannungskopfschmerz",
+        recommendation: "Ibuprofen 400mg fortführen und Zustand beobachten.",
+        medication: "Ibuprofen 400mg"
+      },
+      {
+        complaint: "akute Schmerzen im rechten Knie nach einem Sturz mit Schwellung",
+        diagnosis: "Verdacht auf Meniskusriss",
+        recommendation: "MRT-Diagnostik und konservative Therapie.",
+        medication: "Ibuprofen 600mg"
+      },
+      {
+        complaint: "akute Rückenschmerzen ohne neurologische Ausfälle",
+        diagnosis: "Lumbale Muskelverspannungen",
+        recommendation: "Schonung, Wärmeanwendung und Physiotherapie.",
+        medication: "Paracetamol 500mg"
+      },
+      {
+        complaint: "intermittierende Bauchschmerzen und Übelkeit",
+        diagnosis: "Gastroenteritis",
+        recommendation: "Flüssigkeitszufuhr erhöhen und leichte Kost.",
+        medication: "Metoclopramid 10mg"
+      },
+      {
+        complaint: "verschlechternde Sehstörungen und Kopfschmerzen mit Übelkeit",
+        diagnosis: "Migräne mit Aura",
+        recommendation: "Schonung, Trigger vermeiden, ggf. Triptane verabreichen.",
+        medication: "Sumatriptan 50mg"
+      }
+    ];
+    const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+    // Empfehlung wird in das Diktat integriert
+    const rawDictationText = `Patient klagt über ${scenario.complaint}. Diagnose: ${scenario.diagnosis}. Empfehlung: ${scenario.recommendation}. Versicherungsnummer: ${insuranceNumber}. Medikamenteneinnahme: ${scenario.medication}.`;
+    const createFormattedLetter = () => {
+      return `Musterklinik Musterstadt
 Musterstraße 1
 12345 Musterstadt
 
@@ -342,27 +345,26 @@ Medikamenteneinnahme: ${scenario.medication}.
 
 Mit freundlichen Grüßen,
 Dr. Mustermann`;
-  };
+    };
 
-  const startDictation = () => {
     const pairId = Date.now();
     setDictation(rawDictationText);
-    const newDictEntry = addToVerlauf("Diktat", rawDictationText, "offen", pairId);
-    setDictationEntryId(newDictEntry.id);
+    const dictEntry = addToVerlauf("Diktat", rawDictationText, "offen", pairId);
+    setDictationEntryId(dictEntry.id);
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       const formattedBrief = createFormattedLetter();
       setArztbrief(formattedBrief);
       setEditedBrief(formattedBrief);
-      const newLetterEntry = addToVerlauf("Arztbrief", formattedBrief, "offen", pairId);
-      setLetterEntryId(newLetterEntry.id);
+      const letterEntry = addToVerlauf("Arztbrief", formattedBrief, "offen", pairId);
+      setLetterEntryId(letterEntry.id);
     }, 3000);
   };
 
   const handleSave = () => {
     if (dictationEntryId && letterEntryId) {
-      updateEntry(dictationEntryId, rawDictationText, "gespeichert");
+      updateEntry(dictationEntryId, dictation, "gespeichert");
       updateEntry(letterEntryId, arztbrief, "gespeichert");
       showToast("Arztbrief wurde gespeichert!", "save");
     }
@@ -370,7 +372,7 @@ Dr. Mustermann`;
 
   const handleSend = () => {
     if (dictationEntryId && letterEntryId) {
-      updateEntry(dictationEntryId, rawDictationText, "verschickt");
+      updateEntry(dictationEntryId, dictation, "verschickt");
       updateEntry(letterEntryId, arztbrief, "verschickt");
       showToast("Arztbrief wurde verschickt!", "send");
     }
@@ -583,21 +585,42 @@ function Laborwerte({ labData }) {
 }
 
 // ---------------------------
-// Verlauf (Arztbrief-Historie mit Dashboard)
+// Verlauf (Arztbrief-Historie mit Dashboard und zusätzlichen Save/Send-Buttons)
 // ---------------------------
 function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOpen }) {
+  // Jetzt zuerst den State für den Filter deklarieren
   const [filter, setFilter] = useState("alle");
   const [editingId, setEditingId] = useState(null);
   const [editingText, setEditingText] = useState("");
 
-  const filteredVerlauf = verlauf.filter((entry) => {
-    const matchesProfile =
-      activeProfile.insuranceNumber &&
-      entry.content.includes(`Versicherungsnummer: ${activeProfile.insuranceNumber}`);
-    const matchesFilter = filter === "alle" ? true : entry.status === filter;
-    return matchesProfile && matchesFilter;
+  // Gesamtdaten für Dashboard (alle Einträge des aktuellen Patienten, unabhängig vom Filter)
+  const fullFiltered = verlauf.filter((entry) =>
+    activeProfile.insuranceNumber &&
+    entry.content.includes(`Versicherungsnummer: ${activeProfile.insuranceNumber}`)
+  );
+  const fullGroups = {};
+  fullFiltered.forEach((entry) => {
+    const key = entry.pairId ? entry.pairId : entry.id;
+    if (!fullGroups[key]) {
+      fullGroups[key] = [];
+    }
+    fullGroups[key].push(entry);
   });
+  const dashboardGroups = Object.values(fullGroups);
+  const groupStatuses = dashboardGroups.map((group) => {
+    const statuses = group.map((e) => e.status);
+    const unique = [...new Set(statuses)];
+    return unique.length === 1 ? unique[0] : "offen";
+  });
+  const openCount = groupStatuses.filter((s) => s === "offen").length;
+  const savedCount = groupStatuses.filter((s) => s === "gespeichert").length;
+  const sentCount = groupStatuses.filter((s) => s === "verschickt").length;
 
+  // Für die Anzeige: zusätzlich nach dem gewählten Filter filtern
+  const filteredVerlauf = fullFiltered.filter((entry) => {
+    const matchesFilter = filter === "alle" ? true : entry.status === filter;
+    return matchesFilter;
+  });
   const groups = {};
   filteredVerlauf.forEach((entry) => {
     const key = entry.pairId ? entry.pairId : entry.id;
@@ -608,15 +631,6 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
   });
   const sortedGroups = Object.values(groups).sort((a, b) => b[0].id - a[0].id);
 
-  const groupStatuses = Object.values(groups).map((group) => {
-    const statuses = group.map((e) => e.status);
-    const unique = [...new Set(statuses)];
-    return unique.length === 1 ? unique[0] : "offen";
-  });
-  const openCount = groupStatuses.filter((s) => s === "offen").length;
-  const savedCount = groupStatuses.filter((s) => s === "gespeichert").length;
-  const sentCount = groupStatuses.filter((s) => s === "verschickt").length;
-
   const startEditing = (entry) => {
     setEditingId(entry.id);
     setEditingText(entry.content);
@@ -626,6 +640,14 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
     updateEntry(id, editingText, "gespeichert");
     setEditingId(null);
     setEditingText("");
+  };
+
+  const saveGroup = (group) => {
+    group.forEach(item => updateEntry(item.id, item.content, "gespeichert"));
+  };
+
+  const sendGroup = (group) => {
+    group.forEach(item => updateEntry(item.id, item.content, "verschickt"));
   };
 
   return (
@@ -676,6 +698,22 @@ function Verlauf({ verlauf, activeProfile, deleteEntry, updateEntry, deleteAllOp
                       return unique.length === 1 ? unique[0] : "offen";
                     })()}
                   </h2>
+                  {group[0].status === "offen" && (
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => saveGroup(group)}
+                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded text-xs"
+                      >
+                        Speichern
+                      </button>
+                      <button
+                        onClick={() => sendGroup(group)}
+                        className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-1 px-2 rounded text-xs"
+                      >
+                        Verschicken
+                      </button>
+                    </div>
+                  )}
                 </div>
                 {group.map((item) => (
                   <div key={item.id} className="mb-2">
